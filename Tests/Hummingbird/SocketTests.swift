@@ -116,17 +116,13 @@ class SocketTests: XCTestCase {
         }
 
         let s = Socket(socketDescriptor: sds[1])
-        guard let data: String = try! s.recv() else {
-            XCTFail("Transcoding failed")
-            return
-        }
-
+        let data: String = try! s.recv()
         XCTAssertEqual(data, sendableData)
     }
 
     func testBind_bindsCorrectly() {
         do {
-            let s = try StreamSocket()
+            let s = try Socket.streamSocket()
             try s.bind("0.0.0.0", port: "29876")
         } catch let error {
             XCTFail("Unexpected error: \(error)")
@@ -135,7 +131,7 @@ class SocketTests: XCTestCase {
 
     func testBind_withInvalidAddress_throwsCorrectException() {
         do {
-            let s = try StreamSocket()
+            let s = try Socket.streamSocket()
             try s.bind("derpity&^#@derp!@", port: "29876")
             XCTFail("Expected binding to fail")
         } catch let error as SocketError {
@@ -150,7 +146,7 @@ class SocketTests: XCTestCase {
 
     func testBind_withInvalidPort_throwsCorrectException() {
         do {
-            let s = try StreamSocket()
+            let s = try Socket.streamSocket()
             try s.bind("0.0.0.0", port: "derpadee")
             XCTFail("Expected binding to fail")
         } catch let error as SocketError {
@@ -170,7 +166,7 @@ class SocketTests: XCTestCase {
 
         let bytesRead = systemRecv(socket, buffer, 1024, 0)
         if bytesRead == -1 {
-            throw SocketError.RecvFailed(Int(errno), String.fromCString(strerror(errno)))
+            throw SocketError.RecvFailed(code: Int(errno), message: String.fromCString(strerror(errno)))
         }
 
         guard bytesRead != 0 else { return [] }

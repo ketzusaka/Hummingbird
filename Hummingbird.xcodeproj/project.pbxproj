@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1A03DBDD1C8C1712008280AC /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 1A03DBDC1C8C1712008280AC /* README.md */; };
 		1A33BBA51C86ABD6000499CE /* libStrand.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A33BBA41C86ABD6000499CE /* libStrand.dylib */; };
 		1A33BBA61C86AFBA000499CE /* libStrand.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A33BBA41C86ABD6000499CE /* libStrand.dylib */; };
 		1AC8F0C91C80C46600817477 /* Hummingbird.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AC8F0C81C80C46600817477 /* Hummingbird.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -218,7 +217,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1A03DBDD1C8C1712008280AC /* README.md in Sources */,
 				1AC8F0FA1C80D80C00817477 /* String+Transcoding.swift in Sources */,
 				1AC8F0E41C80C55900817477 /* Socket.swift in Sources */,
 			);
