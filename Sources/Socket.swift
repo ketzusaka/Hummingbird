@@ -194,13 +194,13 @@ public class Socket {
      
      - parameter    maximumConsecutiveFailures:     The maximum number of failures the system accept can have consecutively.
                                                     Passing a negative number means an unlimited number of consecutive errors.
-                                                    Defaults to 10.
+                                                    Defaults to SOMAXCONN.
      - parameter    connectionHandler:              The closure executed when a connection is established.
      - throws:      `SocketError.SocketClosed` if the socket is closed.
                     `SocketError.AcceptConsecutivelyFailing` if a the system accept fails a consecutive number of times that
                     exceeds a positive `maximumConsecutiveFailures`.
     */
-    public func accept(maximumConsecutiveFailures: Int = 10, connectionHandler: (Socket) -> Void) throws {
+    public func accept(maximumConsecutiveFailures: Int = Int(SOMAXCONN), connectionHandler: (Socket) -> Void) throws {
         guard !closed else { throw SocketError.SocketClosed }
 
         var consecutiveFailedAccepts = 0
