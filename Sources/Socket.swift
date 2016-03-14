@@ -280,7 +280,7 @@ public class Socket {
                     `SocketError.RecvFailed` when the system recv call fails.
                     `SocketError.StringTranscodingFailed` if the received data could not be transcoded.
     */
-    public func recv(bufferSize: Int = 1024) throws -> String {
+    public func receive(bufferSize: Int = 1024) throws -> String {
         guard let transcodedString = String(utf8: try recv(bufferSize)) else { throw SocketError.StringTranscodingFailed }
         return transcodedString
     }
@@ -293,7 +293,7 @@ public class Socket {
      - throws:      `SocketError.SocketClosed` if the socket is closed.
                     `SocketError.RecvFailed` when the system recv call fails.
      */
-    public func recv(bufferSize: Int = 1024) throws -> [UInt8] {
+    public func receive(bufferSize: Int = 1024) throws -> [UInt8] {
         guard !closed else { throw SocketError.SocketClosed }
         let buffer = UnsafeMutablePointer<UInt8>.alloc(bufferSize)
 
@@ -332,6 +332,7 @@ public class Socket {
     }
 
     // MARK: - Host resolution
+    // Parts of this adapted from https://github.com/czechboy0/Redbird/blob/466056bba8f160b5a9e270be580bb09cf12e1306/Sources/Redbird/ClientSocket.swift#L126-L142
     private func getAddrFromHostname(hostname: String) throws -> in_addr {
         let hostInfoPointer = systemGetHostByName(hostname)
 
