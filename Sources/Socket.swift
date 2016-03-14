@@ -36,7 +36,7 @@ public enum SocketError: ErrorType {
     case BindingFailed(code: Int, message: String?)
     case CloseFailed(code: Int, message: String?)
     case ListenFailed(code: Int, message: String?)
-    case RecvFailed(code: Int, message: String?)
+    case ReceiveFailed(code: Int, message: String?)
     case ConnectFailed(code: Int, message: String?)
     case HostInformationIncomplete(message: String)
     case InvalidData
@@ -277,11 +277,11 @@ public class Socket {
      - parameter    bufferSize:     The amount of space allocated to read data into.
      - returns:     A `String` representing the data received.
      - throws:      `SocketError.SocketClosed` if the socket is closed.
-                    `SocketError.RecvFailed` when the system recv call fails.
+                    `SocketError.ReceiveFailed` when the system recv call fails.
                     `SocketError.StringTranscodingFailed` if the received data could not be transcoded.
     */
     public func receive(bufferSize: Int = 1024) throws -> String {
-        guard let transcodedString = String(utf8: try recv(bufferSize)) else { throw SocketError.StringTranscodingFailed }
+        guard let transcodedString = String(utf8: try receive(bufferSize)) else { throw SocketError.StringTranscodingFailed }
         return transcodedString
     }
 
@@ -291,7 +291,7 @@ public class Socket {
      - parameter    bufferSize:     The amount of space allocated to read data into.
      - returns:     The received array of UInt8 values.
      - throws:      `SocketError.SocketClosed` if the socket is closed.
-                    `SocketError.RecvFailed` when the system recv call fails.
+                    `SocketError.ReceiveFailed` when the system recv call fails.
      */
     public func receive(bufferSize: Int = 1024) throws -> [UInt8] {
         guard !closed else { throw SocketError.SocketClosed }
@@ -302,7 +302,7 @@ public class Socket {
         let bytesRead = systemRecv(socketDescriptor, buffer, bufferSize, 0)
 
         if bytesRead == -1 {
-            throw SocketError.RecvFailed(code: Int(errno), message: String.fromCString(strerror(errno)))
+            throw SocketError.ReceiveFailed(code: Int(errno), message: String.fromCString(strerror(errno)))
         }
 
         guard bytesRead != 0 else {

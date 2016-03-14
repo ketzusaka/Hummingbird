@@ -14,7 +14,6 @@
 		1AC8F0F01C80C78500817477 /* Hummingbird.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AC8F0C51C80C46600817477 /* Hummingbird.framework */; };
 		1AC8F0F81C80C7C700817477 /* SocketTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AC8F0F61C80C7BB00817477 /* SocketTests.swift */; };
 		1AC8F0FA1C80D80C00817477 /* String+Transcoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AC8F0F91C80D80C00817477 /* String+Transcoding.swift */; };
-		1ACB1E571C96728F00381079 /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACB1E561C96728F00381079 /* Package.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -220,7 +219,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1ACB1E571C96728F00381079 /* Package.swift in Sources */,
 				1AC8F0FA1C80D80C00817477 /* String+Transcoding.swift in Sources */,
 				1AC8F0E41C80C55900817477 /* Socket.swift in Sources */,
 			);

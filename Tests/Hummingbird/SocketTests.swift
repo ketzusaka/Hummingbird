@@ -92,7 +92,7 @@ class SocketTests: XCTestCase {
         }
 
         let s = Socket(socketDescriptor: sds[1])
-        let data: [UInt8] = try! s.recv()
+        let data: [UInt8] = try! s.receive()
 
         XCTAssertEqual(data, sendableData)
     }
@@ -116,7 +116,7 @@ class SocketTests: XCTestCase {
         }
 
         let s = Socket(socketDescriptor: sds[1])
-        let data: String = try! s.recv()
+        let data: String = try! s.receive()
         XCTAssertEqual(data, sendableData)
     }
 
@@ -166,7 +166,7 @@ class SocketTests: XCTestCase {
 
         let bytesRead = systemRecv(socket, buffer, 1024, 0)
         if bytesRead == -1 {
-            throw SocketError.RecvFailed(code: Int(errno), message: String.fromCString(strerror(errno)))
+            throw SocketError.ReceiveFailed(code: Int(errno), message: String.fromCString(strerror(errno)))
         }
 
         guard bytesRead != 0 else { return [] }
