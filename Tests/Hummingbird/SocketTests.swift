@@ -122,8 +122,8 @@ class SocketTests: XCTestCase {
 
     func testBind_bindsCorrectly() {
         do {
-            let s = try Socket.streamSocket()
-            try s.bind("0.0.0.0", port: "29876")
+            let s = try Socket.makeStreamSocket()
+            try s.bind(toAddress: "0.0.0.0", onPort: "29876")
         } catch let error {
             XCTFail("Unexpected error: \(error)")
         }
@@ -131,8 +131,8 @@ class SocketTests: XCTestCase {
 
     func testBind_withInvalidAddress_throwsCorrectException() {
         do {
-            let s = try Socket.streamSocket()
-            try s.bind("derpity&^#@derp!@", port: "29876")
+            let s = try Socket.makeStreamSocket()
+            try s.bind(toAddress: "derpity&^#@derp!@", onPort: "29876")
             XCTFail("Expected binding to fail")
         } catch let error as SocketError {
             switch error {
@@ -146,8 +146,8 @@ class SocketTests: XCTestCase {
 
     func testBind_withInvalidPort_throwsCorrectException() {
         do {
-            let s = try Socket.streamSocket()
-            try s.bind("0.0.0.0", port: "derpadee")
+            let s = try Socket.makeStreamSocket()
+            try s.bind(toAddress: "0.0.0.0", onPort: "derpadee")
             XCTFail("Expected binding to fail")
         } catch let error as SocketError {
             switch error {

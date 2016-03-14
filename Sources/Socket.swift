@@ -70,7 +70,7 @@ public class Socket {
      
      - throws: `SocketError.SocketCreationFailed` if creating the socket failed.
     */
-    public class func streamSocket() throws -> Socket {
+    public class func makeStreamSocket() throws -> Socket {
         #if os(Linux)
             let sd = socket(AF_INET, sockStream, 0)
         #else
@@ -102,7 +102,7 @@ public class Socket {
                     `SocketError.InvalidPort` when converting the port to `in_port_t` fails. 
                     `SocketError.BindingFailed` if the system bind command fails.
     */
-    public func bind(address: String?, port: String?) throws {
+    public func bind(toAddress address: String? = nil, onPort port: String? = nil) throws {
         guard !closed else { throw SocketError.SocketClosed }
         var optval: Int = 1;
 
@@ -144,11 +144,11 @@ public class Socket {
     }
 
     /**
-     Connect to a given address and port.
+     Connect to a given host/address and port.
      
      The socket must be open, and not already connected or binded.
      
-     - parameter    address:    The address to connect to. This can be an IPv4 address, or a hostname that
+     - parameter    target:     The host or address to connect to. This can be an IPv4 address, or a hostname that
                                 can be resolved to an IPv4 address.
      - parameter    port:       The port to connect to.
      - throws:      `SocketError.SocketClosed` if the socket is closed.
@@ -157,7 +157,7 @@ public class Socket {
                     `SocketError.HostInformationIncomplete` if the IP information obtained is incomplete or incompatible.
                     `SocketError.ConnectFailed` if the system connect fall fails.
     */
-    public func connect(address: String, port: String) throws {
+    public func connect(to target: String, onPort port: String) throws {
         guard !closed else { throw SocketError.SocketClosed }
 
         var addr = sockaddr_in()
@@ -167,8 +167,8 @@ public class Socket {
             throw SocketError.InvalidPort
         }
 
-        if inet_pton(AF_INET, address, &addr.sin_addr) != 1 {
-            addr.sin_addr = try getAddrFromHostname(address)
+        if inet_pton(AF_INET, target, &addr.sin_addr) != 1 {
+            addr.sin_addr = try getAddrFromHostname(target)
         }
 
         addr.sin_port = in_port_t(htons(convertedPort))
@@ -188,7 +188,7 @@ public class Socket {
      - throws:      `SocketError.SocketClosed` if the socket is closed.
                     `SocketError.ListenFailed` if the system listen fails.
     */
-    public func listen(backlog: Int = 100) throws {
+    public func listen(pendingConnectionBacklog backlog: Int = 100) throws {
         guard !closed else { throw SocketError.SocketClosed }
 
         if systemListen(socketDescriptor, Int32(backlog)) != 0 {
@@ -282,26 +282,30 @@ public class Socket {
      Receives a `String` from the socket. The data being sent must be UTF8-encoded data that can be 
      transcoded into a `String`.
      
-     - parameter    bufferSize:     The amount of space allocated to read data into.
+     - parameter    bufferSize:     The amount of space allocated to read data into. This does not ensure that your `String`
+                                    will be this size, and does not wait for it to fill. It dictates the maximum amount of data
+                                    we can receive within this call.
      - returns:     A `String` representing the data received.
      - throws:      `SocketError.SocketClosed` if the socket is closed.
                     `SocketError.ReceiveFailed` when the system recv call fails.
                     `SocketError.StringTranscodingFailed` if the received data could not be transcoded.
     */
-    public func receive(bufferSize: Int = 1024) throws -> String {
-        guard let transcodedString = String(utf8: try receive(bufferSize)) else { throw SocketError.StringTranscodingFailed }
+    public func receive(maximumBytes bufferSize: Int = 1024) throws -> String {
+        guard let transcodedString = String(utf8: try receive(maximumBytes: bufferSize)) else { throw SocketError.StringTranscodingFailed }
         return transcodedString
     }
 
     /**
      Receives an array of `UInt8` values from the socket.
 
-     - parameter    bufferSize:     The amount of space allocated to read data into.
+     - parameter    bufferSize:     The amount of space allocated to read data into. This does not ensure that your data
+                                    will be this size, and does not wait for it to fill. It dictates the maximum amount of data
+                                    we can receive within this call.
      - returns:     The received array of UInt8 values.
      - throws:      `SocketError.SocketClosed` if the socket is closed.
                     `SocketError.ReceiveFailed` when the system recv call fails.
      */
-    public func receive(bufferSize: Int = 1024) throws -> [UInt8] {
+    public func receive(maximumBytes bufferSize: Int = 1024) throws -> [UInt8] {
         guard !closed else { throw SocketError.SocketClosed }
         let buffer = UnsafeMutablePointer<UInt8>.alloc(bufferSize)
 
