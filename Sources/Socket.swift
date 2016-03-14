@@ -124,7 +124,15 @@ public class Socket {
         }
 
         if let address = address {
-            addr.sin_addr = in_addr(s_addr: address.withCString { inet_addr($0) })
+            try address.withCString {
+                var s_addr = in_addr()
+
+                guard inet_pton(AF_INET, $0, &s_addr) == 1 else {
+                    throw SocketError.BindingFailed(code: Int(errno), message: String.fromCString(strerror(errno)))
+                }
+
+                addr.sin_addr = s_addr
+            }
         }
 
         addr.sin_zero = (0, 0, 0, 0, 0, 0, 0, 0)
