@@ -10,6 +10,3 @@ install:
 script:
     - swift build
     - swift test
-env:
-    - SWIFT_VERSION=2.2-SNAPSHOT-2016-03-01-a
-    - SWIFT_VERSION=DEVELOPMENT-SNAPSHOT-2016-03-01-a
