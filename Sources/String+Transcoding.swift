@@ -3,7 +3,6 @@
 //  Hummingbird
 //
 //  Created by James Richard on 2/26/16.
-//  Copyright © 2016 MagicalPenguin. All rights reserved.
 //
 
 import Foundation

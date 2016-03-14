@@ -4,7 +4,6 @@
 //
 //  Created by James Richard on 2/8/16.
 //
-//
 
 import Strand
 

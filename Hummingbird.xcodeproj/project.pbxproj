@@ -14,6 +14,7 @@
 		1AC8F0F01C80C78500817477 /* Hummingbird.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AC8F0C51C80C46600817477 /* Hummingbird.framework */; };
 		1AC8F0F81C80C7C700817477 /* SocketTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AC8F0F61C80C7BB00817477 /* SocketTests.swift */; };
 		1AC8F0FA1C80D80C00817477 /* String+Transcoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AC8F0F91C80D80C00817477 /* String+Transcoding.swift */; };
+		1ACB1E571C96728F00381079 /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACB1E561C96728F00381079 /* Package.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,6 +38,7 @@
 		1AC8F0EF1C80C78500817477 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = ../Info.plist; sourceTree = "<group>"; };
 		1AC8F0F61C80C7BB00817477 /* SocketTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SocketTests.swift; sourceTree = "<group>"; };
 		1AC8F0F91C80D80C00817477 /* String+Transcoding.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "String+Transcoding.swift"; sourceTree = "<group>"; };
+		1ACB1E561C96728F00381079 /* Package.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,6 +65,7 @@
 		1AC8F0BB1C80C46600817477 = {
 			isa = PBXGroup;
 			children = (
+				1ACB1E561C96728F00381079 /* Package.swift */,
 				1A33BBA41C86ABD6000499CE /* libStrand.dylib */,
 				1AC8F0C71C80C46600817477 /* Hummingbird */,
 				1AC8F0EC1C80C78500817477 /* HummingbirdTests */,
@@ -217,6 +220,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1ACB1E571C96728F00381079 /* Package.swift in Sources */,
 				1AC8F0FA1C80D80C00817477 /* String+Transcoding.swift in Sources */,
 				1AC8F0E41C80C55900817477 /* Socket.swift in Sources */,
 			);
