@@ -157,7 +157,7 @@ public final class Socket {
                     `SocketError.HostInformationIncomplete` if the IP information obtained is incomplete or incompatible.
                     `SocketError.ConnectFailed` if the system connect fall fails.
     */
-    public func connect(to target: String, onPort port: String) throws {
+    public func connect(toTarget target: String, onPort port: String) throws {
         guard !closed else { throw SocketError.SocketClosed }
 
         var addr = sockaddr_in()
