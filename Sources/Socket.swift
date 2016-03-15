@@ -51,7 +51,7 @@ public enum SocketError: ErrorType {
 }
 
 /// A `Socket` represents a socket descriptor.
-public class Socket {
+public final class Socket {
     let socketDescriptor: Int32
     private var closed = false
 
