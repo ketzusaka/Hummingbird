@@ -5,8 +5,6 @@
 //  Created by James Richard on 2/26/16.
 //
 
-import Foundation
-
 // Credit to Mike Ash: https://www.mikeash.com/pyblog/friday-qa-2015-11-06-why-is-swifts-string-api-so-hard.html
 extension String {
     init?<Seq: SequenceType where Seq.Generator.Element == UInt16>(utf16: Seq) {
