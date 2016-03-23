@@ -31,23 +31,27 @@ import Strand
     let systemGetHostByName = Darwin.gethostbyname
 #endif
 
-public enum SocketError: ErrorType {
-    case AcceptConsecutivelyFailing(code: Int, message: String?)
-    case BindingFailed(code: Int, message: String?)
-    case CloseFailed(code: Int, message: String?)
-    case ListenFailed(code: Int, message: String?)
-    case ReceiveFailed(code: Int, message: String?)
-    case ConnectFailed(code: Int, message: String?)
-    case HostInformationIncomplete(message: String)
-    case InvalidData
-    case InvalidPort
-    case SendFailed(code: Int, message: String?, sent: Int)
-    case ObtainingAddressInformationFailed(code: Int, message: String?)
-    case SocketCreationFailed(code: Int, message: String?)
-    case SocketConfigurationFailed(code: Int, message: String?)
-    case SocketClosed
-    case StringTranscodingFailed
-    case FailedToGetIPFromHostname(code: Int, message: String?)
+#if !swift(>=3.0)
+    public typealias ErrorProtocol = ErrorType
+#endif
+
+public enum SocketError: ErrorProtocol {
+    case acceptConsecutivelyFailing(code: Int, message: String?)
+    case bindingFailed(code: Int, message: String?)
+    case closeFailed(code: Int, message: String?)
+    case listenFailed(code: Int, message: String?)
+    case receiveFailed(code: Int, message: String?)
+    case connectFailed(code: Int, message: String?)
+    case hostInformationIncomplete(message: String)
+    case invalidData
+    case invalidPort
+    case sendFailed(code: Int, message: String?, sent: Int)
+    case obtainingAddressInformationFailed(code: Int, message: String?)
+    case socketCreationFailed(code: Int, message: String?)
+    case socketConfigurationFailed(code: Int, message: String?)
+    case socketClosed
+    case stringTranscodingFailed
+    case failedToGetIPFromHostname(code: Int, message: String?)
 }
 
 /// A `Socket` represents a socket descriptor.
@@ -78,7 +82,12 @@ public final class Socket {
         #endif
 
         guard sd >= 0 else {
-            throw SocketError.SocketCreationFailed(code: Int(errno), message: String.fromCString(strerror(errno)))
+            #if swift(>=3.0)
+                let message = String(validatingUTF8: strerror(errno))
+            #else
+                let message = String.fromCString(strerror(errno))
+            #endif
+            throw SocketError.socketCreationFailed(code: Int(errno), message: message)
         }
 
         return Socket(socketDescriptor: sd)
@@ -103,13 +112,18 @@ public final class Socket {
                     `SocketError.BindingFailed` if the system bind command fails.
     */
     public func bind(toAddress address: String? = nil, onPort port: String? = nil) throws {
-        guard !closed else { throw SocketError.SocketClosed }
+        guard !closed else { throw SocketError.socketClosed }
         var optval: Int = 1;
 
         guard setsockopt(socketDescriptor, SOL_SOCKET, SO_REUSEADDR, &optval, socklen_t(sizeof(Int))) != -1 else {
             systemClose(socketDescriptor)
             closed = true
-            throw SocketError.SocketConfigurationFailed(code: Int(errno), message: String.fromCString(strerror(errno)))
+            #if swift(>=3.0)
+                let message = String(validatingUTF8: strerror(errno))
+            #else
+                let message = String.fromCString(strerror(errno))
+            #endif
+            throw SocketError.socketConfigurationFailed(code: Int(errno), message: message)
         }
 
         var addr = sockaddr_in()
@@ -117,7 +131,7 @@ public final class Socket {
 
         if let port = port {
             guard let convertedPort = in_port_t(port) else {
-                throw SocketError.InvalidPort
+                throw SocketError.invalidPort
             }
 
             addr.sin_port = in_port_t(htons(convertedPort))
@@ -128,7 +142,12 @@ public final class Socket {
                 var s_addr = in_addr()
 
                 guard inet_pton(AF_INET, $0, &s_addr) == 1 else {
-                    throw SocketError.BindingFailed(code: Int(errno), message: String.fromCString(strerror(errno)))
+                    #if swift(>=3.0)
+                        let message = String(validatingUTF8: strerror(errno))
+                    #else
+                        let message = String.fromCString(strerror(errno))
+                    #endif
+                    throw SocketError.bindingFailed(code: Int(errno), message: message)
                 }
 
                 addr.sin_addr = s_addr
@@ -139,7 +158,12 @@ public final class Socket {
 
         let len = socklen_t(UInt8(sizeof(sockaddr_in)))
         guard systemBind(socketDescriptor, sockaddr_cast(&addr), len) != -1 else {
-            throw SocketError.BindingFailed(code: Int(errno), message: String.fromCString(strerror(errno)))
+            #if swift(>=3.0)
+                let message = String(validatingUTF8: strerror(errno))
+            #else
+                let message = String.fromCString(strerror(errno))
+            #endif
+            throw SocketError.bindingFailed(code: Int(errno), message: message)
         }
     }
 
@@ -158,13 +182,13 @@ public final class Socket {
                     `SocketError.ConnectFailed` if the system connect fall fails.
     */
     public func connect(toTarget target: String, onPort port: String) throws {
-        guard !closed else { throw SocketError.SocketClosed }
+        guard !closed else { throw SocketError.socketClosed }
 
         var addr = sockaddr_in()
         addr.sin_family = sa_family_t(AF_INET)
 
         guard let convertedPort = in_port_t(port) else {
-            throw SocketError.InvalidPort
+            throw SocketError.invalidPort
         }
 
         if inet_pton(AF_INET, target, &addr.sin_addr) != 1 {
@@ -177,7 +201,12 @@ public final class Socket {
         let len = socklen_t(UInt8(sizeof(sockaddr_in)))
 
         guard systemConnect(socketDescriptor, sockaddr_cast(&addr), len) >= 0 else {
-            throw SocketError.ConnectFailed(code: Int(errno), message: String.fromCString(strerror(errno)))
+            #if swift(>=3.0)
+                let message = String(validatingUTF8: strerror(errno))
+            #else
+                let message = String.fromCString(strerror(errno))
+            #endif
+            throw SocketError.connectFailed(code: Int(errno), message: message)
         }
     }
 
@@ -189,10 +218,15 @@ public final class Socket {
                     `SocketError.ListenFailed` if the system listen fails.
     */
     public func listen(pendingConnectionBacklog backlog: Int = 100) throws {
-        guard !closed else { throw SocketError.SocketClosed }
+        guard !closed else { throw SocketError.socketClosed }
 
         if systemListen(socketDescriptor, Int32(backlog)) != 0 {
-            throw SocketError.ListenFailed(code: Int(errno), message: String.fromCString(strerror(errno)))
+            #if swift(>=3.0)
+                let message = String(validatingUTF8: strerror(errno))
+            #else
+                let message = String.fromCString(strerror(errno))
+            #endif
+            throw SocketError.listenFailed(code: Int(errno), message: message)
         }
     }
 
@@ -208,7 +242,7 @@ public final class Socket {
                     exceeds a positive `maximumConsecutiveFailures`.
     */
     public func accept(maximumConsecutiveFailures: Int = Int(SOMAXCONN), connectionHandler: (Socket) -> Void) throws {
-        guard !closed else { throw SocketError.SocketClosed }
+        guard !closed else { throw SocketError.socketClosed }
 
         var consecutiveFailedAccepts = 0
         ACCEPT_LOOP: while true {
@@ -220,7 +254,12 @@ public final class Socket {
             if requestDescriptor == -1 {
                 consecutiveFailedAccepts += 1
                 guard maximumConsecutiveFailures >= 0 && consecutiveFailedAccepts < maximumConsecutiveFailures else {
-                    throw SocketError.AcceptConsecutivelyFailing(code: Int(errno), message: String.fromCString(strerror(errno)))
+                    #if swift(>=3.0)
+                        let message = String(validatingUTF8: strerror(errno))
+                    #else
+                        let message = String.fromCString(strerror(errno))
+                    #endif
+                    throw SocketError.acceptConsecutivelyFailing(code: Int(errno), message: message)
                 }
                 continue
             }
@@ -241,8 +280,9 @@ public final class Socket {
      - throws:          `SocketError.SocketClosed` if the socket is closed.
                         `SocketError.SendFailed` if any invocation of the system send fails.
     */
-    public func send<DataSequence: SequenceType where DataSequence.Generator.Element == UInt8>(data: DataSequence) throws {
-        guard !closed else { throw SocketError.SocketClosed }
+    #if swift(>=3.0)
+    public func send<DataSequence: Sequence where DataSequence.Iterator.Element == UInt8>(data: DataSequence) throws {
+        guard !closed else { throw SocketError.socketClosed }
 
         #if os(Linux)
             let flags = Int32(MSG_NOSIGNAL)
@@ -258,13 +298,39 @@ public final class Socket {
                 let s = systemSend(socketDescriptor, buffer.baseAddress + sent, dataArray.count - sent, flags)
 
                 if s == -1 {
-                    throw SocketError.SendFailed(code: Int(errno), message: String.fromCString(strerror(errno)), sent: sent)
+                    throw SocketError.sendFailed(code: Int(errno), message: String(validatingUTF8: strerror(errno)), sent: sent)
                 }
 
                 sent += s
             }
         }
     }
+    #else
+    public func send<DataSequence: SequenceType where DataSequence.Generator.Element == UInt8>(data: DataSequence) throws {
+        guard !closed else { throw SocketError.socketClosed }
+
+        #if os(Linux)
+            let flags = Int32(MSG_NOSIGNAL)
+        #else
+            let flags = Int32(0)
+        #endif
+
+        let dataArray = [UInt8](data)
+
+        try dataArray.withUnsafeBufferPointer { buffer in
+            var sent = 0
+            while sent < dataArray.count {
+                let s = systemSend(socketDescriptor, buffer.baseAddress + sent, dataArray.count - sent, flags)
+
+                if s == -1 {
+                    throw SocketError.sendFailed(code: Int(errno), message: String.fromCString(strerror(errno)), sent: sent)
+                }
+
+                sent += s
+            }
+        }
+    }
+    #endif
 
     /**
      Sends a `String` to the socket. The string is sent in its UTF8 representation. The system send call may 
@@ -275,7 +341,7 @@ public final class Socket {
                         `SocketError.SendFailed` if any invocation of the system send fails.
      */
     public func send(string: String) throws {
-        try send(string.utf8)
+        try send(string.utf8)        
     }
 
     /**
@@ -291,7 +357,7 @@ public final class Socket {
                     `SocketError.StringTranscodingFailed` if the received data could not be transcoded.
     */
     public func receive(maximumBytes bufferSize: Int = 1024) throws -> String {
-        guard let transcodedString = String(utf8: try receive(maximumBytes: bufferSize)) else { throw SocketError.StringTranscodingFailed }
+        guard let transcodedString = String(utf8: try receive(maximumBytes: bufferSize)) else { throw SocketError.stringTranscodingFailed }
         return transcodedString
     }
 
@@ -306,15 +372,30 @@ public final class Socket {
                     `SocketError.ReceiveFailed` when the system recv call fails.
      */
     public func receive(maximumBytes bufferSize: Int = 1024) throws -> [UInt8] {
-        guard !closed else { throw SocketError.SocketClosed }
-        let buffer = UnsafeMutablePointer<UInt8>.alloc(bufferSize)
+        guard !closed else { throw SocketError.socketClosed }
+        #if swift(>=3.0)
+            let buffer = UnsafeMutablePointer<UInt8>(allocatingCapacity: bufferSize)
+        #else
+            let buffer = UnsafeMutablePointer<UInt8>.alloc(bufferSize)
+        #endif
 
-        defer { buffer.dealloc(bufferSize) }
+        defer {
+            #if swift(>=3.0)
+                buffer.deallocateCapacity(bufferSize)
+            #else
+                buffer.dealloc(bufferSize)
+            #endif
+        }
 
         let bytesRead = systemRecv(socketDescriptor, buffer, bufferSize, 0)
 
         if bytesRead == -1 {
-            throw SocketError.ReceiveFailed(code: Int(errno), message: String.fromCString(strerror(errno)))
+            #if swift(>=3.0)
+                let message = String(validatingUTF8: strerror(errno))
+            #else
+                let message = String.fromCString(strerror(errno))
+            #endif
+            throw SocketError.receiveFailed(code: Int(errno), message: message)
         }
 
         guard bytesRead != 0 else {
@@ -336,9 +417,14 @@ public final class Socket {
                 `SocketError.CloseFailed` when the system close command fials
     */
     public func close() throws {
-        guard !closed else { throw SocketError.SocketClosed }
+        guard !closed else { throw SocketError.socketClosed }
         guard systemClose(socketDescriptor) != -1 else {
-            throw SocketError.CloseFailed(code: Int(errno), message: String.fromCString(strerror(errno)))
+            #if swift(>=3.0)
+                let message = String(validatingUTF8: strerror(errno))
+            #else
+                let message = String.fromCString(strerror(errno))
+            #endif
+            throw SocketError.closeFailed(code: Int(errno), message: message)
         }
         closed = true
     }
@@ -349,20 +435,34 @@ public final class Socket {
         let hostInfoPointer = systemGetHostByName(hostname)
 
         guard hostInfoPointer != nil else {
-            throw SocketError.FailedToGetIPFromHostname(code: Int(errno), message: String.fromCString(strerror(errno)))
+            #if swift(>=3.0)
+                let message = String(validatingUTF8: strerror(errno))
+            #else
+                let message = String.fromCString(strerror(errno))
+            #endif
+            throw SocketError.failedToGetIPFromHostname(code: Int(errno), message: message)
         }
 
-        let hostInfo = hostInfoPointer.memory
+        #if swift(>=3.0)
+            let hostInfo = hostInfoPointer.pointee
+        #else
+            let hostInfo = hostInfoPointer.memory
+        #endif
 
         guard hostInfo.h_addrtype == AF_INET else {
-            throw SocketError.HostInformationIncomplete(message: "No IPv4 address")
+            throw SocketError.hostInformationIncomplete(message: "No IPv4 address")
         }
 
         guard hostInfo.h_addr_list != nil else {
-            throw SocketError.HostInformationIncomplete(message: "List is empty")
+            throw SocketError.hostInformationIncomplete(message: "List is empty")
         }
 
-        let addrStruct = sockadd_list_cast(hostInfo.h_addr_list)[0].memory
+        #if swift(>=3.0)
+            let addrStruct = sockadd_list_cast(hostInfo.h_addr_list)[0].pointee
+        #else
+            let addrStruct = sockadd_list_cast(hostInfo.h_addr_list)[0].memory
+        #endif
+
         return addrStruct
     }
 
