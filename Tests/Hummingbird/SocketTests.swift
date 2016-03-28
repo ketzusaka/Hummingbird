@@ -9,8 +9,8 @@ import XCTest
 #endif
 
 #if os(Linux)
-    extension SocketTests: XCTestCaseProvider {
-        var allTests : [(String, () throws -> Void)] {
+    extension SocketTests {
+        static var allTests : [(String, SocketTests -> () throws -> Void)] {
             return [
                 ("testSendingRawDataToSocket_sendsDataCorrectly", testSendingRawDataToSocket_sendsDataCorrectly),
                 ("testSendingStringDataToSocket_sendsDataCorrectly", testSendingStringDataToSocket_sendsDataCorrectly),

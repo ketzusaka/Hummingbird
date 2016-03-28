@@ -1,7 +1,8 @@
+#if os(Linux)
 import XCTest
-@testable import Hummingbirdtest
+@testable import HummingbirdTestSuite
 
 XCTMain([
-	SocketTests()
+	testCase(SocketTests.allTests)
 ])
-
+#endif
