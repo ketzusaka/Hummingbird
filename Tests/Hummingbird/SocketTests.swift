@@ -25,7 +25,7 @@ import XCTest
 #endif
 
 class SocketTests: XCTestCase {
-	func testSendingRawDataToSocket_sendsDataCorrectly() {
+    func testSendingRawDataToSocket_sendsDataCorrectly() {
         var sds: [Int32] = [0,0]
 
         if socketpair(AF_UNIX, Hummingbird.sockStream, 0, &sds) == -1 {
@@ -136,7 +136,7 @@ class SocketTests: XCTestCase {
             XCTFail("Expected binding to fail")
         } catch let error as SocketError {
             switch error {
-            case .BindingFailed(_, _): break
+            case .bindingFailed(_, _): break
             default: XCTFail("Unexpected error: \(error)")
             }
         } catch let error {
@@ -151,7 +151,7 @@ class SocketTests: XCTestCase {
             XCTFail("Expected binding to fail")
         } catch let error as SocketError {
             switch error {
-            case .InvalidPort: break
+            case .invalidPort: break
             default: XCTFail("Unexpected error: \(error)")
             }
         } catch let error {
@@ -160,13 +160,13 @@ class SocketTests: XCTestCase {
     }
 
     private func readDataFromSocket(socket: Int32) throws -> [UInt8] {
-        let buffer = UnsafeMutablePointer<UInt8>.alloc(1024)
+        let buffer = UnsafeMutablePointer<UInt8>(allocatingCapacity: 1024)
 
-        defer { buffer.dealloc(1024) }
+        defer { buffer.deallocateCapacity(1024) }
 
         let bytesRead = systemRecv(socket, buffer, 1024, 0)
         if bytesRead == -1 {
-            throw SocketError.ReceiveFailed(code: Int(errno), message: String.fromCString(strerror(errno)))
+            throw SocketError.receiveFailed(code: Int(errno), message: String(cString: strerror(errno)))
         }
 
         guard bytesRead != 0 else { return [] }
