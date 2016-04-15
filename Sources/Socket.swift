@@ -38,6 +38,7 @@ import Strand
 public enum SocketError: ErrorProtocol {
     case acceptConsecutivelyFailing(code: Int, message: String?)
     case bindingFailed(code: Int, message: String?)
+    case bufferReadFailed
     case closeFailed(code: Int, message: String?)
     case listenFailed(code: Int, message: String?)
     case receiveFailed(code: Int, message: String?)
@@ -281,7 +282,7 @@ public final class Socket {
                         `SocketError.SendFailed` if any invocation of the system send fails.
     */
     #if swift(>=3.0)
-    public func send<DataSequence: Sequence where DataSequence.Iterator.Element == UInt8>(data: DataSequence) throws {
+    public func send<DataSequence: Sequence where DataSequence.Iterator.Element == UInt8>(_ data: DataSequence) throws {
         guard !closed else { throw SocketError.socketClosed }
 
         #if os(Linux)
@@ -294,8 +295,9 @@ public final class Socket {
 
         try dataArray.withUnsafeBufferPointer { buffer in
             var sent = 0
+            guard let base = buffer.baseAddress else { throw SocketError.bufferReadFailed }
             while sent < dataArray.count {
-                let s = systemSend(socketDescriptor, buffer.baseAddress + sent, dataArray.count - sent, flags)
+                let s = systemSend(socketDescriptor, base + sent, dataArray.count - sent, flags)
 
                 if s == -1 {
                     throw SocketError.sendFailed(code: Int(errno), message: String(validatingUTF8: strerror(errno)), sent: sent)
@@ -340,8 +342,8 @@ public final class Socket {
      - throws:          `SocketError.SocketClosed` if the socket is closed.
                         `SocketError.SendFailed` if any invocation of the system send fails.
      */
-    public func send(string: String) throws {
-        try send(string.utf8)        
+    public func send(_ string: String) throws {
+        try send(string.utf8)
     }
 
     /**
@@ -431,7 +433,7 @@ public final class Socket {
 
     // MARK: - Host resolution
     // Parts of this adapted from https://github.com/czechboy0/Redbird/blob/466056bba8f160b5a9e270be580bb09cf12e1306/Sources/Redbird/ClientSocket.swift#L126-L142
-    private func getAddrFromHostname(hostname: String) throws -> in_addr {
+    private func getAddrFromHostname(_ hostname: String) throws -> in_addr {
         let hostInfoPointer = systemGetHostByName(hostname)
 
         guard hostInfoPointer != nil else {
@@ -453,14 +455,23 @@ public final class Socket {
             throw SocketError.hostInformationIncomplete(message: "No IPv4 address")
         }
 
-        guard hostInfo.h_addr_list != nil else {
-            throw SocketError.hostInformationIncomplete(message: "List is empty")
-        }
+        #if swift(>=3.0)
+            guard let addrList = hostInfo.h_addr_list else {
+                throw SocketError.hostInformationIncomplete(message: "List is empty")
+            }
+        #else
+            guard hostInfo.h_addr_list != nil else {
+                throw SocketError.hostInformationIncomplete(message: "List is empty")
+            }
+
+            let addrList = hostInfo.h_addr_list
+        #endif
+
 
         #if swift(>=3.0)
-            let addrStruct = sockadd_list_cast(hostInfo.h_addr_list)[0].pointee
+            let addrStruct = sockadd_list_cast(addrList)[0].pointee
         #else
-            let addrStruct = sockadd_list_cast(hostInfo.h_addr_list)[0].memory
+            let addrStruct = sockadd_list_cast(addrList)[0].memory
         #endif
 
         return addrStruct
@@ -468,21 +479,26 @@ public final class Socket {
 
 
     // MARK: - Utility casts
-    private func htons(value: CUnsignedShort) -> CUnsignedShort {
+    private func htons(_ value: CUnsignedShort) -> CUnsignedShort {
         return (value << 8) + (value >> 8)
     }
 
-    private func sockaddr_cast(p: UnsafeMutablePointer<Void>) -> UnsafeMutablePointer<sockaddr> {
+    private func sockaddr_cast(_ p: UnsafeMutablePointer<Void>) -> UnsafeMutablePointer<sockaddr> {
         return UnsafeMutablePointer<sockaddr>(p)
     }
     
-    private func sockaddr_in_cast(p: UnsafeMutablePointer<sockaddr_in>) -> UnsafeMutablePointer<sockaddr> {
+    private func sockaddr_in_cast(_ p: UnsafeMutablePointer<sockaddr_in>) -> UnsafeMutablePointer<sockaddr> {
         return UnsafeMutablePointer<sockaddr>(p)
     }
-
-    private func sockadd_list_cast(p: UnsafeMutablePointer<UnsafeMutablePointer<Int8>>) -> UnsafeMutablePointer<UnsafeMutablePointer<in_addr>> {
+    #if swift(>=3.0)
+    private func sockadd_list_cast(_ p: UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>) -> UnsafeMutablePointer<UnsafeMutablePointer<in_addr>> {
         return UnsafeMutablePointer<UnsafeMutablePointer<in_addr>>(p)
     }
+    #else
+    private func sockadd_list_cast(_ p: UnsafeMutablePointer<UnsafeMutablePointer<Int8>>) -> UnsafeMutablePointer<UnsafeMutablePointer<in_addr>> {
+        return UnsafeMutablePointer<UnsafeMutablePointer<in_addr>>(p)
+    }
+    #endif
 }
 
 extension Socket: Hashable {

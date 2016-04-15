@@ -159,7 +159,7 @@ class SocketTests: XCTestCase {
         }
     }
 
-    private func readDataFromSocket(socket: Int32) throws -> [UInt8] {
+    private func readDataFromSocket(_ socket: Int32) throws -> [UInt8] {
         let buffer = UnsafeMutablePointer<UInt8>(allocatingCapacity: 1024)
 
         defer { buffer.deallocateCapacity(1024) }
@@ -179,7 +179,7 @@ class SocketTests: XCTestCase {
         return readData
     }
 
-    private func sendData(data: [UInt8], toSocket socket: Int32) throws {
+    private func sendData(_ data: [UInt8], toSocket socket: Int32) throws {
         #if os(Linux)
             let flags = Int32(MSG_NOSIGNAL)
         #else
