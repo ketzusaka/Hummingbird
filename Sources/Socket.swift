@@ -5,6 +5,7 @@
 //  Created by James Richard on 2/8/16.
 //
 
+import C7
 import Strand
 
 #if os(Linux)
@@ -50,7 +51,6 @@ public enum SocketError: ErrorProtocol {
     case obtainingAddressInformationFailed(code: Int, message: String?)
     case socketCreationFailed(code: Int, message: String?)
     case socketConfigurationFailed(code: Int, message: String?)
-    case socketClosed
     case stringTranscodingFailed
     case failedToGetIPFromHostname(code: Int, message: String?)
 }
@@ -58,7 +58,7 @@ public enum SocketError: ErrorProtocol {
 /// A `Socket` represents a socket descriptor.
 public final class Socket {
     let socketDescriptor: Int32
-    private var closed = false
+    public private(set) var closed = false
 
     /** 
      Initialize a `Socket` with a given socket descriptor. The socket descriptor must be open, and further operations on
@@ -107,13 +107,13 @@ public final class Socket {
      
      - parameter    address:    The address to bind to. If no address is given, use any address.
      - parameter    port:       The port to bind it. If no port is given, bind to a random port.
-     - throws:      `SocketError.SocketClosed` if the socket is closed.
+     - throws:      `ClosableError.alreadyClosed` if the socket is closed.
                     `SocketError.SocketConfigurationFailed` when setting SO_REUSEADDR on the socket fails.
                     `SocketError.InvalidPort` when converting the port to `in_port_t` fails. 
                     `SocketError.BindingFailed` if the system bind command fails.
     */
     public func bind(toAddress address: String? = nil, onPort port: String? = nil) throws {
-        guard !closed else { throw SocketError.socketClosed }
+        guard !closed else { throw ClosableError.alreadyClosed }
         var optval: Int = 1;
 
         guard setsockopt(socketDescriptor, SOL_SOCKET, SO_REUSEADDR, &optval, socklen_t(sizeof(Int))) != -1 else {
@@ -176,14 +176,14 @@ public final class Socket {
      - parameter    target:     The host or address to connect to. This can be an IPv4 address, or a hostname that
                                 can be resolved to an IPv4 address.
      - parameter    port:       The port to connect to.
-     - throws:      `SocketError.SocketClosed` if the socket is closed.
+     - throws:      `ClosableError.alreadyClosed` if the socket is closed.
                     `SocketError.InvalidPort` when converting the port to `in_port_t` fails.
                     `SocketError.FailedToGetIPFromHostname` when obtaining an IP from a hostname fails.
                     `SocketError.HostInformationIncomplete` if the IP information obtained is incomplete or incompatible.
                     `SocketError.ConnectFailed` if the system connect fall fails.
     */
     public func connect(toTarget target: String, onPort port: String) throws {
-        guard !closed else { throw SocketError.socketClosed }
+        guard !closed else { throw ClosableError.alreadyClosed }
 
         var addr = sockaddr_in()
         addr.sin_family = sa_family_t(AF_INET)
@@ -215,11 +215,11 @@ public final class Socket {
      Listen for connections.
 
      - parameter    backlog:    The maximum length for the queue of pending connections.
-     - throws:      `SocketError.SocketClosed` if the socket is closed.
+     - throws:      `ClosableError.alreadyClosed` if the socket is closed.
                     `SocketError.ListenFailed` if the system listen fails.
     */
     public func listen(pendingConnectionBacklog backlog: Int = 100) throws {
-        guard !closed else { throw SocketError.socketClosed }
+        guard !closed else { throw ClosableError.alreadyClosed }
 
         if systemListen(socketDescriptor, Int32(backlog)) != 0 {
             #if swift(>=3.0)
@@ -238,12 +238,12 @@ public final class Socket {
                                                     Passing a negative number means an unlimited number of consecutive errors.
                                                     Defaults to SOMAXCONN.
      - parameter    connectionHandler:              The closure executed when a connection is established.
-     - throws:      `SocketError.SocketClosed` if the socket is closed.
+     - throws:      `ClosableError.alreadyClosed` if the socket is closed.
                     `SocketError.AcceptConsecutivelyFailing` if a the system accept fails a consecutive number of times that
                     exceeds a positive `maximumConsecutiveFailures`.
     */
     public func accept(maximumConsecutiveFailures: Int = Int(SOMAXCONN), connectionHandler: (Socket) -> Void) throws {
-        guard !closed else { throw SocketError.socketClosed }
+        guard !closed else { throw ClosableError.alreadyClosed }
 
         var consecutiveFailedAccepts = 0
         ACCEPT_LOOP: while true {
@@ -278,12 +278,12 @@ public final class Socket {
      contained in the sequence.
      
      - parameter        data:       The sequence of data to send.
-     - throws:          `SocketError.SocketClosed` if the socket is closed.
+     - throws:          `ClosableError.alreadyClosed` if the socket is closed.
                         `SocketError.SendFailed` if any invocation of the system send fails.
     */
     #if swift(>=3.0)
     public func send<DataSequence: Sequence where DataSequence.Iterator.Element == UInt8>(_ data: DataSequence) throws {
-        guard !closed else { throw SocketError.socketClosed }
+        guard !closed else { throw ClosableError.alreadyClosed }
 
         #if os(Linux)
             let flags = Int32(MSG_NOSIGNAL)
@@ -308,8 +308,8 @@ public final class Socket {
         }
     }
     #else
-    public func send<DataSequence: SequenceType where DataSequence.Generator.Element == UInt8>(data: DataSequence) throws {
-        guard !closed else { throw SocketError.socketClosed }
+    public func send<DataSequence: SequenceType where DataSequence.Generator.Element == Byte>(data: DataSequence) throws {
+        guard !closed else { throw ClosableError.alreadyClosed }
 
         #if os(Linux)
             let flags = Int32(MSG_NOSIGNAL)
@@ -339,7 +339,7 @@ public final class Socket {
      be called numberous times to send all of the data contained in the sequence.
 
      - parameter        string:     The string to send.
-     - throws:          `SocketError.SocketClosed` if the socket is closed.
+     - throws:          `ClosableError.alreadyClosed` if the socket is closed.
                         `SocketError.SendFailed` if any invocation of the system send fails.
      */
     public func send(_ string: String) throws {
@@ -350,46 +350,47 @@ public final class Socket {
      Receives a `String` from the socket. The data being sent must be UTF8-encoded data that can be 
      transcoded into a `String`.
      
-     - parameter    bufferSize:     The amount of space allocated to read data into. This does not ensure that your `String`
+     - parameter    byteCount:       The amount of space allocated to read data into. This does not ensure that your `String`
                                     will be this size, and does not wait for it to fill. It dictates the maximum amount of data
                                     we can receive within this call.
      - returns:     A `String` representing the data received.
-     - throws:      `SocketError.SocketClosed` if the socket is closed.
+     - throws:      `ClosableError.alreadyClosed` if the socket is closed.
                     `SocketError.ReceiveFailed` when the system recv call fails.
                     `SocketError.StringTranscodingFailed` if the received data could not be transcoded.
     */
-    public func receive(maximumBytes bufferSize: Int = 1024) throws -> String {
-        guard let transcodedString = String(utf8: try receive(maximumBytes: bufferSize)) else { throw SocketError.stringTranscodingFailed }
+    public func receive(upTo byteCount: Int = 1024, timingOut deadline: Double = .never) throws -> String {
+        let bytes: [Byte] = try receive(upTo: byteCount, timingOut: deadline)
+        guard let transcodedString = String(utf8: bytes) else { throw SocketError.stringTranscodingFailed }
         return transcodedString
     }
 
     /**
-     Receives an array of `UInt8` values from the socket.
+     Receives an array of `Byte` values from the socket.
 
-     - parameter    bufferSize:     The amount of space allocated to read data into. This does not ensure that your data
+     - parameter    byteCount:       The amount of space allocated to read data into. This does not ensure that your data
                                     will be this size, and does not wait for it to fill. It dictates the maximum amount of data
                                     we can receive within this call.
      - returns:     The received array of UInt8 values.
-     - throws:      `SocketError.SocketClosed` if the socket is closed.
+     - throws:      `ClosableError.alreadyClosed` if the socket is closed.
                     `SocketError.ReceiveFailed` when the system recv call fails.
      */
-    public func receive(maximumBytes bufferSize: Int = 1024) throws -> [UInt8] {
-        guard !closed else { throw SocketError.socketClosed }
+    public func receive(upTo byteCount: Int = 1024, timingOut deadline: Double = .never) throws -> [Byte] {
+        guard !closed else { throw ClosableError.alreadyClosed }
         #if swift(>=3.0)
-            let buffer = UnsafeMutablePointer<UInt8>(allocatingCapacity: bufferSize)
+            let buffer = UnsafeMutablePointer<UInt8>(allocatingCapacity: byteCount)
         #else
-            let buffer = UnsafeMutablePointer<UInt8>.alloc(bufferSize)
+            let buffer = UnsafeMutablePointer<UInt8>.alloc(byteCount)
         #endif
 
         defer {
             #if swift(>=3.0)
-                buffer.deallocateCapacity(bufferSize)
+                buffer.deallocateCapacity(byteCount)
             #else
-                buffer.dealloc(bufferSize)
+                buffer.dealloc(byteCount)
             #endif
         }
 
-        let bytesRead = systemRecv(socketDescriptor, buffer, bufferSize, 0)
+        let bytesRead = systemRecv(socketDescriptor, buffer, byteCount, 0)
 
         if bytesRead == -1 {
             #if swift(>=3.0)
@@ -415,11 +416,11 @@ public final class Socket {
     /**
      Closes the socket.
      
-     - throws:  `SocketError.SocketClosed` if the socket is already closed.
+     - throws:  `ClosableError.alreadyClosed` if the socket is already closed.
                 `SocketError.CloseFailed` when the system close command fials
     */
     public func close() throws {
-        guard !closed else { throw SocketError.socketClosed }
+        guard !closed else { throw ClosableError.alreadyClosed }
         guard systemClose(socketDescriptor) != -1 else {
             #if swift(>=3.0)
                 let message = String(validatingUTF8: strerror(errno))
@@ -503,6 +504,22 @@ public final class Socket {
 
 extension Socket: Hashable {
     public var hashValue: Int { return Int(socketDescriptor) }
+}
+
+extension Socket: C7.Stream {
+
+    public func receive(upTo byteCount: Int, timingOut deadline: Double) throws -> Data {
+        let bytes: [Byte] = try receive(upTo: byteCount, timingOut: deadline)
+        return Data(bytes)
+    }
+
+    public func send(_ data: Data, timingOut: Double) throws {
+        try send(data.bytes)
+    }
+
+    public func flush(timingOut: Double) throws {
+        // noop; we always send immediately
+    }
 }
 
 public func ==(lhs: Socket, rhs: Socket) -> Bool {
