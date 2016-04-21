@@ -32,29 +32,6 @@ import Strand
     let systemGetHostByName = Darwin.gethostbyname
 #endif
 
-#if !swift(>=3.0)
-    public typealias ErrorProtocol = ErrorType
-#endif
-
-public enum SocketError: ErrorProtocol {
-    case acceptConsecutivelyFailing(code: Int, message: String?)
-    case bindingFailed(code: Int, message: String?)
-    case bufferReadFailed
-    case closeFailed(code: Int, message: String?)
-    case listenFailed(code: Int, message: String?)
-    case receiveFailed(code: Int, message: String?)
-    case connectFailed(code: Int, message: String?)
-    case hostInformationIncomplete(message: String)
-    case invalidData
-    case invalidPort
-    case sendFailed(code: Int, message: String?, sent: Int)
-    case obtainingAddressInformationFailed(code: Int, message: String?)
-    case socketCreationFailed(code: Int, message: String?)
-    case socketConfigurationFailed(code: Int, message: String?)
-    case stringTranscodingFailed
-    case failedToGetIPFromHostname(code: Int, message: String?)
-}
-
 /// A `Socket` represents a socket descriptor.
 public final class Socket {
     let socketDescriptor: Int32
@@ -357,6 +334,7 @@ public final class Socket {
      - throws:      `ClosableError.alreadyClosed` if the socket is closed.
                     `SocketError.ReceiveFailed` when the system recv call fails.
                     `SocketError.StringTranscodingFailed` if the received data could not be transcoded.
+                    `SocketError.connectionClosedByPeer` if the remote peer signaled the connection is being closed.
     */
     public func receive(upTo byteCount: Int = 1024, timingOut deadline: Double = .never) throws -> String {
         let bytes: [Byte] = try receive(upTo: byteCount, timingOut: deadline)
@@ -373,6 +351,7 @@ public final class Socket {
      - returns:     The received array of UInt8 values.
      - throws:      `ClosableError.alreadyClosed` if the socket is closed.
                     `SocketError.ReceiveFailed` when the system recv call fails.
+                    `SocketError.connectionClosedByPeer` if the remote peer signaled the connection is being closed.
      */
     public func receive(upTo byteCount: Int = 1024, timingOut deadline: Double = .never) throws -> [Byte] {
         guard !closed else { throw ClosableError.alreadyClosed }
@@ -401,8 +380,13 @@ public final class Socket {
             throw SocketError.receiveFailed(code: Int(errno), message: message)
         }
 
+        /*
+         A message of zero bytes means that the remote end is about to close the connection. This is
+         done so the socket doesn't sit around waiting until the timeout is reached.
+        */
         guard bytesRead != 0 else {
-            return []
+            _ = try? close()
+            throw SocketError.connectionClosedByPeer
         }
 
         var readData = [UInt8]()

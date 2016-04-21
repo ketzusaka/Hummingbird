@@ -7,10 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1AEA7FAE1CC67FE60087B734 /* libC7.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = "_____Product_C7" /* libC7.dylib */; };
-		1AEA7FAF1CC67FE60087B734 /* libStrand.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = "_____Product_Strand" /* libStrand.dylib */; };
+		1A4B15121CC93D4B00E64FF5 /* libC7.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = "_____Product_C7" /* libC7.dylib */; };
+		1A4B15131CC93D4B00E64FF5 /* libStrand.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = "_____Product_Strand" /* libStrand.dylib */; };
 		_LinkFileRef_C7 /* libC7.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = "_____Product_C7" /* libC7.dylib */; };
-		_LinkFileRef_Hummingbird /* libHummingbird.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = "_____Product_Hummingbird" /* libHummingbird.dylib */; };
+		_LinkFileRef_Hummingbird /* Hummingbird.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = "_____Product_Hummingbird" /* Hummingbird.dylib */; };
 		_LinkFileRef_Strand /* libStrand.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = "_____Product_Strand" /* libStrand.dylib */; };
 		"__src_cc_ref_Packages/C7-0.5.0/Sources/AsyncConnection.swift" /* AsyncConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = "__PBXFileRef_Packages/C7-0.5.0/Sources/AsyncConnection.swift" /* AsyncConnection.swift */; };
 		"__src_cc_ref_Packages/C7-0.5.0/Sources/AsyncHost.swift" /* AsyncHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = "__PBXFileRef_Packages/C7-0.5.0/Sources/AsyncHost.swift" /* AsyncHost.swift */; };
@@ -33,28 +33,29 @@
 		"__src_cc_ref_Packages/C7-0.5.0/Sources/Time.swift" /* Time.swift in Sources */ = {isa = PBXBuildFile; fileRef = "__PBXFileRef_Packages/C7-0.5.0/Sources/Time.swift" /* Time.swift */; };
 		"__src_cc_ref_Packages/C7-0.5.0/Sources/URI.swift" /* URI.swift in Sources */ = {isa = PBXBuildFile; fileRef = "__PBXFileRef_Packages/C7-0.5.0/Sources/URI.swift" /* URI.swift */; };
 		"__src_cc_ref_Packages/C7-0.5.0/Sources/URIConnection.swift" /* URIConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = "__PBXFileRef_Packages/C7-0.5.0/Sources/URIConnection.swift" /* URIConnection.swift */; };
-		"__src_cc_ref_Packages/Strand-1.2.2/Sources/Strand.swift" /* Strand.swift in Sources */ = {isa = PBXBuildFile; fileRef = "__PBXFileRef_Packages/Strand-1.2.2/Sources/Strand.swift" /* Strand.swift */; };
+		"__src_cc_ref_Packages/Strand-1.2.3/Sources/Strand.swift" /* Strand.swift in Sources */ = {isa = PBXBuildFile; fileRef = "__PBXFileRef_Packages/Strand-1.2.3/Sources/Strand.swift" /* Strand.swift */; };
 		__src_cc_ref_Sources/Socket.swift /* Socket.swift in Sources */ = {isa = PBXBuildFile; fileRef = __PBXFileRef_Sources/Socket.swift /* Socket.swift */; };
+		__src_cc_ref_Sources/SocketError.swift /* SocketError.swift in Sources */ = {isa = PBXBuildFile; fileRef = __PBXFileRef_Sources/SocketError.swift /* SocketError.swift */; };
 		"__src_cc_ref_Sources/String+Transcoding.swift" /* String+Transcoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = "__PBXFileRef_Sources/String+Transcoding.swift" /* String+Transcoding.swift */; };
 		__src_cc_ref_Tests/Hummingbird/SocketTests.swift /* SocketTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = __PBXFileRef_Tests/Hummingbird/SocketTests.swift /* SocketTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		1AEA7FB01CC67FE60087B734 /* PBXContainerItemProxy */ = {
+		1A4B15141CC93D4B00E64FF5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = __RootObject_ /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = "______Target_C7";
 			remoteInfo = C7;
 		};
-		1AEA7FB11CC67FE60087B734 /* PBXContainerItemProxy */ = {
+		1A4B15151CC93D4B00E64FF5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = __RootObject_ /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = "______Target_Strand";
 			remoteInfo = Strand;
 		};
-		1AEA7FB21CC67FE60087B734 /* PBXContainerItemProxy */ = {
+		1A4B15161CC93D4B00E64FF5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = __RootObject_ /* Project object */;
 			proxyType = 1;
@@ -86,13 +87,14 @@
 		"__PBXFileRef_Packages/C7-0.5.0/Sources/Time.swift" /* Time.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Time.swift; sourceTree = "<group>"; };
 		"__PBXFileRef_Packages/C7-0.5.0/Sources/URI.swift" /* URI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URI.swift; sourceTree = "<group>"; };
 		"__PBXFileRef_Packages/C7-0.5.0/Sources/URIConnection.swift" /* URIConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URIConnection.swift; sourceTree = "<group>"; };
-		"__PBXFileRef_Packages/Strand-1.2.2/Sources/Strand.swift" /* Strand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Strand.swift; sourceTree = "<group>"; };
+		"__PBXFileRef_Packages/Strand-1.2.3/Sources/Strand.swift" /* Strand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Strand.swift; sourceTree = "<group>"; };
 		__PBXFileRef_Sources/Socket.swift /* Socket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Socket.swift; sourceTree = "<group>"; };
+		__PBXFileRef_Sources/SocketError.swift /* SocketError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketError.swift; sourceTree = "<group>"; };
 		"__PBXFileRef_Sources/String+Transcoding.swift" /* String+Transcoding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Transcoding.swift"; sourceTree = "<group>"; };
 		__PBXFileRef_Tests/Hummingbird/SocketTests.swift /* SocketTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketTests.swift; sourceTree = "<group>"; };
 		"_____Product_C7" /* libC7.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; path = libC7.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		"_____Product_Hummingbird" /* libHummingbird.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; path = libHummingbird.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		"_____Product_HummingbirdTestSuite" /* Hummingbird.testsuite.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = Hummingbird.testsuite.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		"_____Product_Hummingbird" /* Hummingbird.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; name = Hummingbird.dylib; path = libHummingbird.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		"_____Product_HummingbirdTestSuite" /* HummingbirdTestSuite.xctest */ = {isa = PBXFileReference; lastKnownFileType = file; name = HummingbirdTestSuite.xctest; path = Hummingbird.testsuite.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		"_____Product_Strand" /* libStrand.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; path = libStrand.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -117,9 +119,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 0;
 			files = (
-				1AEA7FAE1CC67FE60087B734 /* libC7.dylib in Frameworks */,
-				1AEA7FAF1CC67FE60087B734 /* libStrand.dylib in Frameworks */,
-				_LinkFileRef_Hummingbird /* libHummingbird.dylib in Frameworks */,
+				1A4B15121CC93D4B00E64FF5 /* libC7.dylib in Frameworks */,
+				1A4B15131CC93D4B00E64FF5 /* libStrand.dylib in Frameworks */,
+				_LinkFileRef_Hummingbird /* Hummingbird.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -145,7 +147,7 @@
 		TestProducts_ /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				"_____Product_HummingbirdTestSuite" /* Hummingbird.testsuite.xctest */,
+				"_____Product_HummingbirdTestSuite" /* HummingbirdTestSuite.xctest */,
 			);
 			name = Tests;
 			sourceTree = "<group>";
@@ -167,7 +169,7 @@
 				TestProducts_ /* Tests */,
 				"_____Product_Strand" /* libStrand.dylib */,
 				"_____Product_C7" /* libC7.dylib */,
-				"_____Product_Hummingbird" /* libHummingbird.dylib */,
+				"_____Product_Hummingbird" /* Hummingbird.dylib */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -213,6 +215,7 @@
 			isa = PBXGroup;
 			children = (
 				__PBXFileRef_Sources/Socket.swift /* Socket.swift */,
+				__PBXFileRef_Sources/SocketError.swift /* SocketError.swift */,
 				"__PBXFileRef_Sources/String+Transcoding.swift" /* String+Transcoding.swift */,
 			);
 			name = Hummingbird;
@@ -231,10 +234,10 @@
 		"_______Group_Strand" /* Strand */ = {
 			isa = PBXGroup;
 			children = (
-				"__PBXFileRef_Packages/Strand-1.2.2/Sources/Strand.swift" /* Strand.swift */,
+				"__PBXFileRef_Packages/Strand-1.2.3/Sources/Strand.swift" /* Strand.swift */,
 			);
 			name = Strand;
-			path = "Packages/Strand-1.2.2/Sources";
+			path = "Packages/Strand-1.2.3/Sources";
 			sourceTree = "<group>";
 		};
 		"_______Tests_" /* Tests */ = {
@@ -279,7 +282,7 @@
 			);
 			name = Hummingbird;
 			productName = Hummingbird;
-			productReference = "_____Product_Hummingbird" /* libHummingbird.dylib */;
+			productReference = "_____Product_Hummingbird" /* Hummingbird.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		"______Target_HummingbirdTestSuite" /* Hummingbird.testsuite */ = {
@@ -298,7 +301,7 @@
 			);
 			name = Hummingbird.testsuite;
 			productName = HummingbirdTestSuite;
-			productReference = "_____Product_HummingbirdTestSuite" /* Hummingbird.testsuite.xctest */;
+			productReference = "_____Product_HummingbirdTestSuite" /* HummingbirdTestSuite.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		"______Target_Strand" /* Strand */ = {
@@ -379,6 +382,7 @@
 			buildActionMask = 0;
 			files = (
 				__src_cc_ref_Sources/Socket.swift /* Socket.swift in Sources */,
+				__src_cc_ref_Sources/SocketError.swift /* SocketError.swift in Sources */,
 				"__src_cc_ref_Sources/String+Transcoding.swift" /* String+Transcoding.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -395,7 +399,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 0;
 			files = (
-				"__src_cc_ref_Packages/Strand-1.2.2/Sources/Strand.swift" /* Strand.swift in Sources */,
+				"__src_cc_ref_Packages/Strand-1.2.3/Sources/Strand.swift" /* Strand.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -405,17 +409,17 @@
 		__Dependency_C7 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = "______Target_C7" /* C7 */;
-			targetProxy = 1AEA7FB01CC67FE60087B734 /* PBXContainerItemProxy */;
+			targetProxy = 1A4B15141CC93D4B00E64FF5 /* PBXContainerItemProxy */;
 		};
 		__Dependency_Hummingbird /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = "______Target_Hummingbird" /* Hummingbird */;
-			targetProxy = 1AEA7FB21CC67FE60087B734 /* PBXContainerItemProxy */;
+			targetProxy = 1A4B15161CC93D4B00E64FF5 /* PBXContainerItemProxy */;
 		};
 		__Dependency_Strand /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = "______Target_Strand" /* Strand */;
-			targetProxy = 1AEA7FB11CC67FE60087B734 /* PBXContainerItemProxy */;
+			targetProxy = 1A4B15151CC93D4B00E64FF5 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
