@@ -11,7 +11,7 @@
 #endif
 
 public enum SocketError: ErrorProtocol {
-    case acceptConsecutivelyFailing(code: Int, message: String?)
+    case acceptFailed(code: Int, message: String?)
     case bindingFailed(code: Int, message: String?)
     case bufferReadFailed
     case closeFailed(code: Int, message: String?)
@@ -34,7 +34,7 @@ extension SocketError: Equatable { }
 
 public func == (lhs: SocketError, rhs: SocketError) -> Bool {
     switch (lhs, rhs) {
-    case (let .acceptConsecutivelyFailing(lCode, lMessage), let .acceptConsecutivelyFailing(rCode, rMessage)):
+    case (let .acceptFailed(lCode, lMessage), let .acceptFailed(rCode, rMessage)):
         return lCode == rCode && lMessage == rMessage
     case (let .bindingFailed(lCode, lMessage), let .bindingFailed(rCode, rMessage)):
         return lCode == rCode && lMessage == rMessage

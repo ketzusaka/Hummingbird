@@ -16,9 +16,6 @@ import XCTest
                 ("testSendingStringDataToSocket_sendsDataCorrectly", testSendingStringDataToSocket_sendsDataCorrectly),
                 ("testReceivingRawDataToSocket_readsCorrectly", testReceivingRawDataToSocket_readsCorrectly),
                 ("testReceivingStringDataToSocket_readsCorrectly", testReceivingStringDataToSocket_readsCorrectly),
-                ("testBind_withInvalidAddress_throwsCorrectException", testBind_withInvalidAddress_throwsCorrectException),
-                ("testBind_withInvalidPort_throwsCorrectException", testBind_withInvalidPort_throwsCorrectException),
-                ("testBind_bindsCorrectly", testBind_bindsCorrectly)
             ]
         }
     }
@@ -118,45 +115,6 @@ class SocketTests: XCTestCase {
         let s = Socket(socketDescriptor: sds[1])
         let data: String = try! s.receive()
         XCTAssertEqual(data, sendableData)
-    }
-
-    func testBind_bindsCorrectly() {
-        do {
-            let s = try Socket.makeStreamSocket()
-            try s.bind(toAddress: "0.0.0.0", onPort: "29876")
-        } catch let error {
-            XCTFail("Unexpected error: \(error)")
-        }
-    }
-
-    func testBind_withInvalidAddress_throwsCorrectException() {
-        do {
-            let s = try Socket.makeStreamSocket()
-            try s.bind(toAddress: "derpity&^#@derp!@", onPort: "29876")
-            XCTFail("Expected binding to fail")
-        } catch let error as SocketError {
-            switch error {
-            case .bindingFailed(_, _): break
-            default: XCTFail("Unexpected error: \(error)")
-            }
-        } catch let error {
-            XCTFail("Unexpected error: \(error)")
-        }
-    }
-
-    func testBind_withInvalidPort_throwsCorrectException() {
-        do {
-            let s = try Socket.makeStreamSocket()
-            try s.bind(toAddress: "0.0.0.0", onPort: "derpadee")
-            XCTFail("Expected binding to fail")
-        } catch let error as SocketError {
-            switch error {
-            case .invalidPort: break
-            default: XCTFail("Unexpected error: \(error)")
-            }
-        } catch let error {
-            XCTFail("Unexpected error: \(error)")
-        }
     }
 
     private func readDataFromSocket(_ socket: Int32) throws -> [UInt8] {
