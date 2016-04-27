@@ -18,7 +18,7 @@ import XCTest
 
 #if os(Linux)
     extension ServerSocketTests {
-        static var allTests : [(String, SocketTests -> () throws -> Void)] {
+        static var allTests : [(String, ServerSocketTests -> () throws -> Void)] {
             return [
                        ("testBind_withInvalidAddress_throwsCorrectException", testBind_withInvalidAddress_throwsCorrectException),
                        ("testBind_withInvalidPort_throwsCorrectException", testBind_withInvalidPort_throwsCorrectException),
