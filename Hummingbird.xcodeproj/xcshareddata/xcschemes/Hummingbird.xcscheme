@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "______Target_Strand"
-               BuildableName = "libStrand.dylib"
+               BuildableName = "Strand.dylib"
                BlueprintName = "Strand"
                ReferencedContainer = "container:Hummingbird.xcodeproj">
             </BuildableReference>
@@ -29,7 +29,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "______Target_C7"
-               BuildableName = "libC7.dylib"
+               BuildableName = "C7.dylib"
                BlueprintName = "C7"
                ReferencedContainer = "container:Hummingbird.xcodeproj">
             </BuildableReference>
@@ -43,7 +43,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "______Target_Hummingbird"
-               BuildableName = "libHummingbird.dylib"
+               BuildableName = "Hummingbird.dylib"
                BlueprintName = "Hummingbird"
                ReferencedContainer = "container:Hummingbird.xcodeproj">
             </BuildableReference>
@@ -61,8 +61,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "______Target_HummingbirdTestSuite"
-               BuildableName = "Hummingbird.testsuite.xctest"
-               BlueprintName = "Hummingbird.testsuite"
+               BuildableName = "HummingbirdTestSuite.xctest"
+               BlueprintName = "HummingbirdTestSuite"
                ReferencedContainer = "container:Hummingbird.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -84,7 +84,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "______Target_Strand"
-            BuildableName = "libStrand.dylib"
+            BuildableName = "Strand.dylib"
             BlueprintName = "Strand"
             ReferencedContainer = "container:Hummingbird.xcodeproj">
          </BuildableReference>
