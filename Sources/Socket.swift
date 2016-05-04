@@ -6,36 +6,20 @@
 //
 
 import C7
-import Strand
 
 #if os(Linux)
     import Glibc
-    let sockStream = Int32(SOCK_STREAM.rawValue)
-    let systemAccept = Glibc.accept
-    let systemClose = Glibc.close
-    let systemListen = Glibc.listen
-    let systemRecv = Glibc.recv
-    let systemSend = Glibc.send
-    let systemBind = Glibc.bind
-    let systemConnect = Glibc.connect
-    let systemGetHostByName = Glibc.gethostbyname
 #else
     import Darwin.C
-    let sockStream = SOCK_STREAM
-    let systemAccept = Darwin.accept
-    let systemClose = Darwin.close
-    let systemListen = Darwin.listen
-    let systemRecv = Darwin.recv
-    let systemSend = Darwin.send
-    let systemBind = Darwin.bind
-    let systemConnect = Darwin.connect
-    let systemGetHostByName = Darwin.gethostbyname
 #endif
 
 /// A `Socket` represents a socket descriptor.
-public final class Socket {
+public class Socket {
+
     let socketDescriptor: Int32
-    public private(set) var closed = false
+
+    /// `true` if the socket is closed. Otherwise `false`.
+    public internal(set) var closed = false
 
     /** 
      Initialize a `Socket` with a given socket descriptor. The socket descriptor must be open, and further operations on
@@ -47,203 +31,9 @@ public final class Socket {
         self.socketDescriptor = socketDescriptor
     }
 
-    /**
-     Creates a new IPv4 TCP socket.
-     
-     - throws: `SocketError.SocketCreationFailed` if creating the socket failed.
-    */
-    public class func makeStreamSocket() throws -> Socket {
-        #if os(Linux)
-            let sd = socket(AF_INET, sockStream, 0)
-        #else
-            let sd = socket(AF_INET, sockStream, IPPROTO_TCP)
-        #endif
-
-        guard sd >= 0 else {
-            #if swift(>=3.0)
-                let message = String(validatingUTF8: strerror(errno))
-            #else
-                let message = String.fromCString(strerror(errno))
-            #endif
-            throw SocketError.socketCreationFailed(code: Int(errno), message: message)
-        }
-
-        return Socket(socketDescriptor: sd)
-    }
-
     deinit {
         if !closed {
             systemClose(socketDescriptor)
-        }
-    }
-
-    /**
-     Binds the socket to a given address and port. 
-
-     The socket must be open, and must not already be binded.
-     
-     - parameter    address:    The address to bind to. If no address is given, use any address.
-     - parameter    port:       The port to bind it. If no port is given, bind to a random port.
-     - throws:      `ClosableError.alreadyClosed` if the socket is closed.
-                    `SocketError.socketConfigurationFailed` when setting SO_REUSEADDR on the socket fails.
-                    `SocketError.invalidPort` when converting the port to `in_port_t` fails.
-                    `SocketError.bindingFailed` if the system bind command fails.
-    */
-    public func bind(toAddress address: String? = nil, onPort port: String? = nil) throws {
-        guard !closed else { throw ClosableError.alreadyClosed }
-        var optval: Int = 1;
-
-        guard setsockopt(socketDescriptor, SOL_SOCKET, SO_REUSEADDR, &optval, socklen_t(sizeof(Int))) != -1 else {
-            systemClose(socketDescriptor)
-            closed = true
-            #if swift(>=3.0)
-                let message = String(validatingUTF8: strerror(errno))
-            #else
-                let message = String.fromCString(strerror(errno))
-            #endif
-            throw SocketError.socketConfigurationFailed(code: Int(errno), message: message)
-        }
-
-        var addr = sockaddr_in()
-        addr.sin_family = sa_family_t(AF_INET)
-
-        if let port = port {
-            guard let convertedPort = in_port_t(port) else {
-                throw SocketError.invalidPort
-            }
-
-            addr.sin_port = in_port_t(htons(convertedPort))
-        }
-
-        if let address = address {
-            try address.withCString {
-                var s_addr = in_addr()
-
-                guard inet_pton(AF_INET, $0, &s_addr) == 1 else {
-                    #if swift(>=3.0)
-                        let message = String(validatingUTF8: strerror(errno))
-                    #else
-                        let message = String.fromCString(strerror(errno))
-                    #endif
-                    throw SocketError.bindingFailed(code: Int(errno), message: message)
-                }
-
-                addr.sin_addr = s_addr
-            }
-        }
-
-        addr.sin_zero = (0, 0, 0, 0, 0, 0, 0, 0)
-
-        let len = socklen_t(UInt8(sizeof(sockaddr_in)))
-        guard systemBind(socketDescriptor, sockaddr_cast(&addr), len) != -1 else {
-            #if swift(>=3.0)
-                let message = String(validatingUTF8: strerror(errno))
-            #else
-                let message = String.fromCString(strerror(errno))
-            #endif
-            throw SocketError.bindingFailed(code: Int(errno), message: message)
-        }
-    }
-
-    /**
-     Connect to a given host/address and port.
-     
-     The socket must be open, and not already connected or binded.
-     
-     - parameter    target:     The host or address to connect to. This can be an IPv4 address, or a hostname that
-                                can be resolved to an IPv4 address.
-     - parameter    port:       The port to connect to.
-     - throws:      `ClosableError.alreadyClosed` if the socket is closed.
-                    `SocketError.invalidPort` when converting the port to `in_port_t` fails.
-                    `SocketError.failedToGetIPFromHostname` when obtaining an IP from a hostname fails.
-                    `SocketError.hostInformationIncomplete` if the IP information obtained is incomplete or incompatible.
-                    `SocketError.connectFailed` if the system connect fall fails.
-    */
-    public func connect(toTarget target: String, onPort port: String) throws {
-        guard !closed else { throw ClosableError.alreadyClosed }
-
-        var addr = sockaddr_in()
-        addr.sin_family = sa_family_t(AF_INET)
-
-        guard let convertedPort = in_port_t(port) else {
-            throw SocketError.invalidPort
-        }
-
-        if inet_pton(AF_INET, target, &addr.sin_addr) != 1 {
-            addr.sin_addr = try getAddrFromHostname(target)
-        }
-
-        addr.sin_port = in_port_t(htons(convertedPort))
-        addr.sin_zero = (0, 0, 0, 0, 0, 0, 0, 0)
-
-        let len = socklen_t(UInt8(sizeof(sockaddr_in)))
-
-        guard systemConnect(socketDescriptor, sockaddr_cast(&addr), len) >= 0 else {
-            #if swift(>=3.0)
-                let message = String(validatingUTF8: strerror(errno))
-            #else
-                let message = String.fromCString(strerror(errno))
-            #endif
-            throw SocketError.connectFailed(code: Int(errno), message: message)
-        }
-    }
-
-    /**
-     Listen for connections.
-
-     - parameter    backlog:    The maximum length for the queue of pending connections.
-     - throws:      `ClosableError.alreadyClosed` if the socket is closed.
-                    `SocketError.listenFailed` if the system listen fails.
-    */
-    public func listen(pendingConnectionBacklog backlog: Int = 100) throws {
-        guard !closed else { throw ClosableError.alreadyClosed }
-
-        if systemListen(socketDescriptor, Int32(backlog)) != 0 {
-            #if swift(>=3.0)
-                let message = String(validatingUTF8: strerror(errno))
-            #else
-                let message = String.fromCString(strerror(errno))
-            #endif
-            throw SocketError.listenFailed(code: Int(errno), message: message)
-        }
-    }
-
-    /**
-     Begin accepting connections. When a connection is accepted, a new thread is created by the system `accept` command.
-     
-     - parameter    maximumConsecutiveFailures:     The maximum number of failures the system accept can have consecutively.
-                                                    Passing a negative number means an unlimited number of consecutive errors.
-                                                    Defaults to SOMAXCONN.
-     - parameter    connectionHandler:              The closure executed when a connection is established.
-     - throws:      `ClosableError.alreadyClosed` if the socket is closed.
-                    `SocketError.acceptConsecutivelyFailing` if a the system accept fails a consecutive number of times that
-                    exceeds a positive `maximumConsecutiveFailures`.
-    */
-    public func accept(maximumConsecutiveFailures: Int = Int(SOMAXCONN), connectionHandler: (Socket) -> Void) throws {
-        guard !closed else { throw ClosableError.alreadyClosed }
-
-        var consecutiveFailedAccepts = 0
-        ACCEPT_LOOP: while true {
-            let requestDescriptor = systemAccept(socketDescriptor, nil, nil)
-
-            if requestDescriptor == -1 {
-                consecutiveFailedAccepts += 1
-                guard maximumConsecutiveFailures >= 0 && consecutiveFailedAccepts < maximumConsecutiveFailures else {
-                    #if swift(>=3.0)
-                        let message = String(validatingUTF8: strerror(errno))
-                    #else
-                        let message = String.fromCString(strerror(errno))
-                    #endif
-                    throw SocketError.acceptConsecutivelyFailing(code: Int(errno), message: message)
-                }
-                continue
-            }
-
-            consecutiveFailedAccepts = 0
-
-            _ = try Strand {
-                connectionHandler(Socket(socketDescriptor: requestDescriptor))
-            }
         }
     }
 
@@ -256,16 +46,16 @@ public final class Socket {
                         `SocketError.sendFailed` if any invocation of the system send fails.
     */
     #if swift(>=3.0)
-    public func send<DataSequence: Sequence where DataSequence.Iterator.Element == UInt8>(_ data: DataSequence) throws {
+    public func send<DataSequence: Sequence where DataSequence.Iterator.Element == Byte>(_ data: DataSequence) throws {
         guard !closed else { throw ClosableError.alreadyClosed }
 
         #if os(Linux)
             let flags = Int32(MSG_NOSIGNAL)
         #else
-            let flags = Int32(0)
+            let flags = Int32(SO_NOSIGPIPE)
         #endif
 
-        let dataArray = [UInt8](data)
+        let dataArray = [Byte](data)
 
         try dataArray.withUnsafeBufferPointer { buffer in
             var sent = 0
@@ -288,10 +78,10 @@ public final class Socket {
         #if os(Linux)
             let flags = Int32(MSG_NOSIGNAL)
         #else
-            let flags = Int32(0)
+            let flags = Int32(SO_NOSIGPIPE)
         #endif
 
-        let dataArray = [UInt8](data)
+        let dataArray = [Byte](data)
 
         try dataArray.withUnsafeBufferPointer { buffer in
             var sent = 0
@@ -386,7 +176,7 @@ public final class Socket {
             throw SocketError.connectionClosedByPeer
         }
 
-        var readData = [UInt8]()
+        var readData = [Byte]()
         for i in 0 ..< bytesRead {
             readData.append(buffer[i])
         }
@@ -415,7 +205,7 @@ public final class Socket {
 
     // MARK: - Host resolution
     // Parts of this adapted from https://github.com/czechboy0/Redbird/blob/466056bba8f160b5a9e270be580bb09cf12e1306/Sources/Redbird/ClientSocket.swift#L126-L142
-    private func getAddrFromHostname(_ hostname: String) throws -> in_addr {
+    func getAddrFromHostname(_ hostname: String) throws -> in_addr {
         let hostInfoPointer = systemGetHostByName(hostname)
 
         guard hostInfoPointer != nil else {
@@ -461,26 +251,47 @@ public final class Socket {
 
 
     // MARK: - Utility casts
-    private func htons(_ value: CUnsignedShort) -> CUnsignedShort {
+    func htons(_ value: CUnsignedShort) -> CUnsignedShort {
         return (value << 8) + (value >> 8)
     }
 
-    private func sockaddr_cast(_ p: UnsafeMutablePointer<Void>) -> UnsafeMutablePointer<sockaddr> {
+    func sockaddr_cast(_ p: UnsafeMutablePointer<Void>) -> UnsafeMutablePointer<sockaddr> {
         return UnsafeMutablePointer<sockaddr>(p)
     }
     
-    private func sockaddr_in_cast(_ p: UnsafeMutablePointer<sockaddr_in>) -> UnsafeMutablePointer<sockaddr> {
+    func sockaddr_in_cast(_ p: UnsafeMutablePointer<sockaddr_in>) -> UnsafeMutablePointer<sockaddr> {
         return UnsafeMutablePointer<sockaddr>(p)
     }
+
     #if swift(>=3.0)
-    private func sockadd_list_cast(_ p: UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>) -> UnsafeMutablePointer<UnsafeMutablePointer<in_addr>> {
+    func sockadd_list_cast(_ p: UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>) -> UnsafeMutablePointer<UnsafeMutablePointer<in_addr>> {
         return UnsafeMutablePointer<UnsafeMutablePointer<in_addr>>(p)
     }
     #else
-    private func sockadd_list_cast(_ p: UnsafeMutablePointer<UnsafeMutablePointer<Int8>>) -> UnsafeMutablePointer<UnsafeMutablePointer<in_addr>> {
+    func sockadd_list_cast(_ p: UnsafeMutablePointer<UnsafeMutablePointer<Int8>>) -> UnsafeMutablePointer<UnsafeMutablePointer<in_addr>> {
         return UnsafeMutablePointer<UnsafeMutablePointer<in_addr>>(p)
     }
     #endif
+
+    class func createSocketDescriptor() throws -> Int32 {
+        #if os(Linux)
+            let sd = socket(AF_INET, sockStream, 0)
+        #else
+            let sd = socket(AF_INET, sockStream, IPPROTO_TCP)
+        #endif
+
+        guard sd >= 0 else {
+            #if swift(>=3.0)
+                let message = String(validatingUTF8: strerror(errno))
+            #else
+                let message = String.fromCString(strerror(errno))
+            #endif
+            throw SocketError.socketCreationFailed(code: Int(errno), message: message)
+        }
+
+        return sd
+    }
+    
 }
 
 extension Socket: Hashable {
