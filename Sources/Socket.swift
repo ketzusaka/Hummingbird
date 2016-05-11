@@ -218,7 +218,7 @@ public class Socket {
         }
 
         #if swift(>=3.0)
-            let hostInfo = hostInfoPointer.pointee
+            let hostInfo = hostInfoPointer!.pointee
         #else
             let hostInfo = hostInfoPointer.memory
         #endif
