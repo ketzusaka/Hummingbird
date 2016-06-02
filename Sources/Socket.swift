@@ -33,7 +33,7 @@ public class Socket {
 
     deinit {
         if !closed {
-            systemClose(socketDescriptor)
+            let _ = systemClose(socketDescriptor)
         }
     }
 

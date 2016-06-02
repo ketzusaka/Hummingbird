@@ -50,7 +50,7 @@ public final class ServerSocket: Socket {
         var optval: Int = 1;
 
         guard setsockopt(socketDescriptor, SOL_SOCKET, SO_REUSEADDR, &optval, socklen_t(sizeof(Int))) != -1 else {
-            systemClose(socketDescriptor)
+            let _ = systemClose(socketDescriptor)
             closed = true
             #if swift(>=3.0)
                 let message = String(validatingUTF8: strerror(errno))
