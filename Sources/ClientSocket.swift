@@ -66,7 +66,7 @@ extension ClientSocket: Connection {
         addr.sin_port = in_port_t(htons(convertedPort))
         addr.sin_zero = (0, 0, 0, 0, 0, 0, 0, 0)
 
-        let len = socklen_t(UInt8(sizeof(sockaddr_in)))
+        let len = socklen_t(UInt8(sizeof(sockaddr_in.self)))
 
         guard systemConnect(socketDescriptor, sockaddr_cast(&addr), len) >= 0 else {
             #if swift(>=3.0)

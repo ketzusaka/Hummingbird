@@ -49,7 +49,7 @@ public final class ServerSocket: Socket {
         guard !closed else { throw ClosableError.alreadyClosed }
         var optval: Int = 1;
 
-        guard setsockopt(socketDescriptor, SOL_SOCKET, SO_REUSEADDR, &optval, socklen_t(sizeof(Int))) != -1 else {
+        guard setsockopt(socketDescriptor, SOL_SOCKET, SO_REUSEADDR, &optval, socklen_t(sizeof(Int.self))) != -1 else {
             let _ = systemClose(socketDescriptor)
             closed = true
             #if swift(>=3.0)
@@ -90,7 +90,7 @@ public final class ServerSocket: Socket {
 
         addr.sin_zero = (0, 0, 0, 0, 0, 0, 0, 0)
 
-        let len = socklen_t(UInt8(sizeof(sockaddr_in)))
+        let len = socklen_t(UInt8(sizeof(sockaddr_in.self)))
         guard systemBind(socketDescriptor, sockaddr_cast(&addr), len) != -1 else {
             #if swift(>=3.0)
                 let message = String(validatingUTF8: strerror(errno))
